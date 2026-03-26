@@ -8,18 +8,12 @@ struct Auth {
   String token;
 };
 
-struct Album {
-    String id;
-    String name;
-    String genre;
-    String artist;
-};
-
 struct Song {
     String id;
     String title;
     String album;
     String artist;
+    String genre;
     unsigned int duration; //ms
 };
 

@@ -7,6 +7,9 @@
 
 int status = WL_IDLE_STATUS;
 void _printWiFiStatus();
+bool _full_sync(HTTPClient& client);
+bool _incremental_sync(HTTPClient& client, uint32_t lastSync);
+bool _reconciliation_sync(HTTPClient& client);
 Preferences prefs;
 bool run_sync(HTTPClient& client) {
     prefs.begin("earworm", true);
@@ -16,7 +19,7 @@ bool run_sync(HTTPClient& client) {
     if (lastFull == 0) {
         return _full_sync(client);
     }
-    if (!_incremental_sync(client)) {
+    if (!_incremental_sync(client, -1)) {
         Serial.println("Incremental Sync failed");
         return false;
     }
@@ -29,7 +32,7 @@ bool run_sync(HTTPClient& client) {
 
 bool _full_sync(HTTPClient& client) {
     //TODO: Handle download list
-    if (!get_indexes(client)) {
+    if (!get_indexes(client, 0)) {
         Serial.println("Full Sync failed");
         return false;
     }
@@ -67,10 +70,12 @@ bool _reconciliation_sync(HTTPClient& client) {
     Updates last_full_sync timestamp on completion.
     Returns true if completed without errors.
     */
+   return true;
 }
 
 int _process_download_queue(HTTPClient& client) {
     //TODO: Download new content
+    return 0;
 }
 
 void handle_wifi_connection(String SSID, String Password) {

@@ -73,6 +73,19 @@ library.json
 
 ### library.json structure
 ```json
+[
+    {
+     "id": "Q2oBz7VJR5aIaaqZFvfWsu",
+     "name": "Suit & Tie",
+     "album": "The 20/20 Experience",
+     "artist": "Justin Timberlake feat. JAY‐Z",
+     "genre": "Pop",
+     "duration_ms": 326321,
+     "filepath": "/music/Justin Timberlake/The 20_20 Experience/2. Suit & Tie.mp3",
+     "cover_path": "/music/Justin Timberlake/The 20_20 Experience/cover.jpg"
+   },
+   ...
+]
 
 ```
 
@@ -132,6 +145,8 @@ library.json
 
 `const char* get_active_genre()` - Returns the currently active genre filter string. Returns empty string if set to All tracks
 
+`const char* set_active_genre(String genre)` - Sets `genre` as the current genre filter.
+
 **encoder_manager.cpp**
 
 `void init_encoder()` - Configure encoder GPIO pins
@@ -173,6 +188,8 @@ library.json
 `bool handle_wifi_connection()` - Attempt connection to SSIDs stored in NVS. Returns true if connected within the 10-second timeout, false if all attempts failed.
 
 **ui_manager.cpp**
+
+`void draw_boot()` - Draw screen for boot sequence.
 
 `void draw_now_playing()` - Render the full now-playing screen: album art, track name, artist, progress bar, battery, active genre, encoder mode, and Repeat Single indicator if active.
 

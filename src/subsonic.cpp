@@ -49,7 +49,7 @@ bool authenticate(HTTPClient& client, String _serverURL, String _username, Strin
     }   
 }
 
-int get_indexes(HTTPClient& client, int modified_since = 0) {
+int get_indexes(HTTPClient& client, int modified_since) {
     /*
     TODO: Call the Subsonic getIndexes endpoint.
     If modified_since is 0, fetches the full artist index (used for first boot and reconciliation syncs).
@@ -59,7 +59,7 @@ int get_indexes(HTTPClient& client, int modified_since = 0) {
     return 0;
 }
 
-int get_albums(HTTPClient& client, String artist_id, Album* album_array, int max_count) {
+int get_albums(HTTPClient& client, String artist_id, String* album_array, int max_count) {
     Auth auth = _generateAuth(password);
     String url = "http://"+serverURL+":"+String(PORT)
         + "/rest/Artist?"
@@ -78,7 +78,8 @@ int get_albums(HTTPClient& client, String artist_id, Album* album_array, int max
     String response = client.getString();
     client.end();
     if (statusCode != 200) {
-        Serial.println("HTTP Response not ok :'(");
+        Serial.print("HTTP Response not ok :'( Status Code: ");
+        Serial.println(statusCode);
         return -1;
     }
     //TODO: Extract response to albums.
@@ -104,7 +105,8 @@ int get_songs(HTTPClient& client, String album_id, Song* song_array, int max_cou
     String response = client.getString();
     client.end();
     if (statusCode != 200) {
-        Serial.println("HTTP Response not ok :'(");
+        Serial.print("HTTP Response not ok :'( Status Code: ");
+        Serial.println(statusCode);
         return -1;
     }
     //TODO: Extract response into Songs.
@@ -133,7 +135,8 @@ bool download_track(HTTPClient& client, String title, String filepath) {
     String response = client.getString();
     client.end();
     if (statusCode != 200) {
-        Serial.println("HTTP Response not ok :'(");
+        Serial.print("HTTP Response not ok :'( Status Code: ");
+        Serial.println(statusCode);
         return false;
     }
     // Serial.println(response); 4MB file too big to print, assume it works.
@@ -161,10 +164,10 @@ bool download_cover_art(HTTPClient& client, String album_id, String filepath) {
     String response = client.getString();
     client.end();
     if (statusCode != 200) {
-        Serial.println("HTTP Response not ok :'(");
+        Serial.print("HTTP Response not ok :'( Status Code: ");
+        Serial.println(statusCode);
         return false;
     }
-    Serial.println(response);
     //TODO: write response to file.
     return true;
 

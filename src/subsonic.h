@@ -20,9 +20,9 @@ struct Song {
 
 bool authenticate(HTTPClient& client, String serverURL, String username, String password);
 
-int get_indexes(HTTPClient& client, int modified_since = 0);
+int get_indexes(HTTPClient& client, int modified_since);
 
-int get_albums(HTTPClient& client, String artist_id, Album* album_array, int max_count);
+int get_albums(HTTPClient& client, String artist_id, String* album_array, int max_count);
 
 int get_songs(HTTPClient& client, String album_id, Song* song_array, int max_count);
 

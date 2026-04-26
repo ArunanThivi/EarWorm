@@ -21,23 +21,21 @@ SpiRamAllocator allocator;
 
 String _genre = "";
 
-SdFile file;
 
 track* playlist;
-const int PLAYLIST_SIZE = 500;
+const uint MAX_SIZE = 500;
 uint currentIndex = 0;
+
+uint playlist_size = 0;
 
 JsonDocument filter;
 
 void _shuffle_playlist(track* playlist, int n);
 
 int init_playlist_manager() {
-    if (!file.open("library.json", FILE_READ)) {
-        Serial.println("Failed to open library.json");
-        return -1;
-    }
 
-    playlist = (track*) heap_caps_malloc(PLAYLIST_SIZE*sizeof(track), MALLOC_CAP_SPIRAM);
+
+    playlist = (track*) heap_caps_malloc(MAX_SIZE*sizeof(track), MALLOC_CAP_SPIRAM);
     if (playlist == NULL) {
         Serial.println("Could not allocate space for playlist in PSRAM");
         return -1;
@@ -49,7 +47,7 @@ int init_playlist_manager() {
     return 0;
 }
 
-int build_playlist() {
+int build_playlist(SdFat& sd) {
     int count = 0;
     JsonDocument song(&allocator);
     if (_genre == "") {
@@ -57,44 +55,61 @@ int build_playlist() {
     } else {
         filter["genre"] = true;
     }
+    File32 file = sd.open("/library.json", FILE_READ);
+    if (!file) {
+        Serial.println("Failed to open library.json");
+        return -1;
+    }
 
-    int c;
-    file.seekSet(0); //Reset library.json cursor
-    while ((c = file.read()) != '{');
-    file.seekCur(-1);
-    while (count < PLAYLIST_SIZE) {
+    if (!file.find("[")) {
+        Serial.println("/library.json is missing array start '['");
+        return -1;
+    }
+    do {
         DeserializationError error = deserializeJson(song, file, DeserializationOption::Filter(filter));
         if (error) {
             Serial.print("deserializeJson() failed: ");
             Serial.println(error.c_str());
             return -1;
         }
-
         if (_genre == "" || _genre == song["genre"]) {
             strncpy(playlist[count].id, song["id"].as<const char*>(), 24);
+            playlist[count].id[sizeof(playlist[count].id) - 1] = '\0';
             strncpy(playlist[count].filepath, song["filepath"].as<const char*>(), 128);
+            playlist[count].filepath[sizeof(playlist[count].filepath) - 1] = '\0';
             playlist[count].duration = song["duration_ms"].as<uint32_t>();
             count++;
         }
 
-        //Read until next object
-        bool done = false;
-        while ((c = file.read())  != -1) {
-            if (c == '{') {
-                file.seekCur(-1);
-                break;
-            }
-            if (c == ']') {
-                done = true;
-                break;
-            }
-        }
-        if (done) break;
-    }
+    } while (count < MAX_SIZE && file.findUntil(",","]"));
 
+    playlist_size = count;
     _shuffle_playlist(playlist, count);
     currentIndex = 0;
     return count;
+}
+
+
+track* get_next_track() {
+    currentIndex += 1;
+    if (currentIndex == playlist_size) {
+        _shuffle_playlist(playlist, playlist_size);
+        currentIndex = 0;
+        return get_current_track();
+    }
+    return get_current_track();
+}
+
+track* get_prev_track() {
+    if (currentIndex == 0) {
+        return get_current_track();
+    }
+    currentIndex -= 1;
+    return get_current_track();
+}
+
+track* get_current_track() {
+    return &playlist[currentIndex];
 }
 
 String get_active_genre() {

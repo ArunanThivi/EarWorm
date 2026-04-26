@@ -1,5 +1,5 @@
 #include <Arduino.h>
-
+#include <SdFat.h>
 struct track {
     char id[24];
     char filepath[128];
@@ -8,7 +8,7 @@ struct track {
 
 int init_playlist_manager();
 
-int build_playlist();
+int build_playlist(SdFat& sd);
 
 String get_active_genre();
 

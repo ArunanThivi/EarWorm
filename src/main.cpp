@@ -78,7 +78,7 @@ void setup() {
   }
   Serial.println("Playlist Manager initialized");
 
-  if (build_playlist()) {
+  if (build_playlist(sd) < 0) {
     Serial.println("Error building playlist");
     exit(0);
   }
